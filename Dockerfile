@@ -1,20 +1,14 @@
-# 使用するベースイメージ
-FROM python:3.9-slim
+FROM golang:1.18
 
-# 作業ディレクトリの指定
 WORKDIR /app
 
-# 依存関係のファイルをコンテナにコピー
-COPY requirements.txt .
+COPY go.mod go.sum ./
+RUN go mod download
 
-# 依存関係のインストール
-RUN pip install --no-cache-dir -r requirements.txt
-
-# ソースコードをコンテナにコピー
 COPY . .
 
-# ポート番号の指定
-EXPOSE 8888
+RUN go build -o main ./...
 
-# コンテナ起動時のコマンド
-CMD ["python", "line_bot.py"]
+EXPOSE 8080
+
+CMD ["./main"]
