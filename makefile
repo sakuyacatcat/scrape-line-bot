@@ -30,6 +30,10 @@ deploy:
 	@echo "Deploying to fly.io..."
 	fly deploy -a $(FLY_APP_NAME)
 
+set_env:
+	@echo "Setting environment variables..."
+	./scripts/flyio_set_env.sh
+
 destroy:
 	@echo "Destroying fly.io app..."
 	fly destroy $(FLY_APP_NAME) -y
