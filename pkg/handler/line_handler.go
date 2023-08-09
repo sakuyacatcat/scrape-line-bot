@@ -8,11 +8,27 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
+var (
+	secret string
+	token  string
+)
+
+func init() {
+	s, err := os.LookupEnv("LINE_CHANNEL_SECRET")
+	if !err {
+		log.Fatal("LINE_CHANNEL_SECRET is not set")
+	}
+	secret = s
+
+	t, err := os.LookupEnv("LINE_CHANNEL_ACCESS_TOKEN")
+	if !err {
+		log.Fatal("LINE_CHANNEL_ACCESS_TOKEN is not set")
+	}
+	token = t
+}
+
 func LineBotHandler(w http.ResponseWriter, r *http.Request) {
-	bot, err := linebot.New(
-		os.Getenv("LINE_BOT_CHANNEL_SECRET"),
-		os.Getenv("LINE_BOT_CHANNEL_TOKEN"),
-	)
+	bot, err := linebot.New(secret, token)
 	if err != nil {
 		log.Fatal(err)
 	}
