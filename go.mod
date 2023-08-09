@@ -1,4 +1,4 @@
-module scrape-line-bot
+module github.com/sakuyacatcat/scrape-line-bot
 
 go 1.18
 

@@ -7,8 +7,8 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o main ./...
+RUN go build -o /go/bin/line-scrape-bot
 
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["/go/bin/line-scrape-bot"]
