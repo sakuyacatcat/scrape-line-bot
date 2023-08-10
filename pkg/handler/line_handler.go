@@ -13,6 +13,20 @@ var (
 	token  string
 )
 
+type HttpRequestHandler http.Handler
+
+type lineBotHandler struct {
+	bot *linebot.Client
+}
+
+func NewLineBotHandler() (HttpRequestHandler, error) {
+	bot, err := linebot.New(secret, token)
+	if err != nil {
+		return nil, err
+	}
+	return &lineBotHandler{bot}, nil
+}
+
 func init() {
 	s, err := os.LookupEnv("LINE_CHANNEL_SECRET")
 	if !err {
@@ -27,13 +41,8 @@ func init() {
 	token = t
 }
 
-func LineBotHandler(w http.ResponseWriter, r *http.Request) {
-	bot, err := linebot.New(secret, token)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	events, err := bot.ParseRequest(r)
+func (h *lineBotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	events, err := h.bot.ParseRequest(r)
 	if err != nil {
 		log.Print(err)
 		return
@@ -43,7 +52,7 @@ func LineBotHandler(w http.ResponseWriter, r *http.Request) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+				if _, err = h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
 					log.Print(err)
 				}
 			}
