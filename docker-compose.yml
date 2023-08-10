@@ -14,3 +14,4 @@ services:
     tty: true
     container_name: scrape-line-bot
     restart: always
+    entrypoint: /bin/bash
