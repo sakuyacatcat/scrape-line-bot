@@ -4,7 +4,7 @@ services:
   scrape-line-bot:
     build:
       context: .
-      target: runner
+      target: builder
     volumes:
       - .:/app
     ports:
