@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", handler.HelloHandler)
+	http.HandleFunc("/", handler.LineBotHandler)
 	http.ListenAndServe(":8080", nil)
 }
