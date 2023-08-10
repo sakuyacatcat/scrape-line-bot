@@ -22,13 +22,19 @@ auth:
 	@echo "Authenticating to fly.io..."
 	fly auth login
 
-app_setup:
+setup:
 	@echo "Creating fly.io app..."
 	fly apps create $(FLY_APP_NAME)
+
+setenv:
+	@echo "Setting environment variables..."
+	./scripts/flyio_set_env.sh
 
 deploy:
 	@echo "Deploying to fly.io..."
 	fly deploy -a $(FLY_APP_NAME)
+
+app_start: setup setenv deploy
 
 destroy:
 	@echo "Destroying fly.io app..."
