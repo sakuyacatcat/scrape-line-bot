@@ -1,11 +1,16 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  scrape-line-bot:
+    build:
+      context: .
+      target: runner
     volumes:
       - .:/app
     ports:
       - "8080:8080"
     env_file:
       - .env
+    tty: true
+    container_name: scrape-line-bot
+    restart: always
