@@ -127,16 +127,16 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// HandleEvent mocks base method.
-func (m *MockEventHandler) HandleEvent(arg0 *linebot.Event) error {
+// handleEvent mocks base method.
+func (m *MockEventHandler) handleEvent(arg0 *linebot.Event) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HandleEvent", arg0)
+	ret := m.ctrl.Call(m, "handleEvent", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// HandleEvent indicates an expected call of HandleEvent.
-func (mr *MockEventHandlerMockRecorder) HandleEvent(arg0 interface{}) *gomock.Call {
+// handleEvent indicates an expected call of handleEvent.
+func (mr *MockEventHandlerMockRecorder) handleEvent(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleEvent", reflect.TypeOf((*MockEventHandler)(nil).HandleEvent), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "handleEvent", reflect.TypeOf((*MockEventHandler)(nil).handleEvent), arg0)
 }
