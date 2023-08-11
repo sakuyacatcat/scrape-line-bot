@@ -46,3 +46,43 @@ make deploy
 ```:sh
 make destroy
 ```
+
+## Architecture
+
+```mermaid
+graph TD
+
+  A[main.go]
+
+  subgraph interface
+    B[handler]
+  end
+
+  subgraph infrastructure
+    C[scraper]
+  end
+
+
+  subgraph view
+    D[view]
+  end
+
+  subgraph application service
+    E[usecase]
+  end
+
+  subgraph domain
+    F[service]
+    G[model]
+    H[repository]
+    F --> G
+  end
+
+  A -->|"エントリーポイント"| B
+  B -->|"UseCaseへ注入"| C
+  B -->|"表示結果の整形"| D
+  B -->|"コート探索"| E
+  E -->|"フィルター"| F
+  E -->|"クエリ"| H
+  C -.->|"実装(抽象に依存)"| H
+```
