@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func getEnv() error {
 func main() {
 	bot, err := linebot.New(secret, token)
 	if err != nil {
-		log.Print(fmt.Errorf("failed to get line bot client: %w", err))
+		log.Printf("failed to get line bot client: %v", err)
 	}
 	handlers := handler.NewEventHandlerContainer(bot)
 	lineHandler := handler.NewLineHandler(bot, handlers)

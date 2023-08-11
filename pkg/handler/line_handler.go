@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -68,7 +69,7 @@ func (h *MessageEventHandler) HandleEvent(event *linebot.Event) error {
 	switch message := event.Message.(type) {
 	case *linebot.TextMessage:
 		if _, err := h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
-			log.Printf("ReplyMessage failed: %v", err)
+			return fmt.Errorf("ReplyMessage failed: %v", err)
 		}
 	}
 	return nil
