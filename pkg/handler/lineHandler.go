@@ -19,30 +19,30 @@ type LineBotClient interface {
 }
 
 type EventHandler interface {
-	HandleEvent(*linebot.Event) error
+	handleEvent(*linebot.Event) error
 }
 
 type lineHandler struct {
 	bot      LineBotClient
-	handlers *EventHandlerContainer
+	handlers *eventHandlerContainer
 }
 
-type MessageEventHandler struct {
+type messageEventHandler struct {
 	bot LineBotClient
 }
 
-type EventHandlerContainer struct {
+type eventHandlerContainer struct {
 	handlers map[linebot.EventType]EventHandler
 }
 
-func NewLineHandler(bot LineBotClient, handlers *EventHandlerContainer) LineHandler {
+func NewLineHandler(bot LineBotClient, handlers *eventHandlerContainer) LineHandler {
 	return &lineHandler{bot, handlers}
 }
 
-func NewEventHandlerContainer(bot LineBotClient) *EventHandlerContainer {
-	return &EventHandlerContainer{
+func NewEventHandlerContainer(bot LineBotClient) *eventHandlerContainer {
+	return &eventHandlerContainer{
 		handlers: map[linebot.EventType]EventHandler{
-			linebot.EventTypeMessage: &MessageEventHandler{bot},
+			linebot.EventTypeMessage: &messageEventHandler{bot},
 		},
 	}
 }
@@ -55,18 +55,18 @@ func (h *lineHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, event := range events {
-		handler := h.handlers.GetHandler(event.Type)
-		if err := handler.HandleEvent(event); err != nil {
+		handler := h.handlers.getHandler(event.Type)
+		if err := handler.handleEvent(event); err != nil {
 			log.Printf("handleEvent failed: %v", err)
 		}
 	}
 }
 
-func (c *EventHandlerContainer) GetHandler(eventType linebot.EventType) EventHandler {
+func (c *eventHandlerContainer) getHandler(eventType linebot.EventType) EventHandler {
 	return c.handlers[eventType]
 }
 
-func (h *MessageEventHandler) HandleEvent(event *linebot.Event) error {
+func (h *messageEventHandler) handleEvent(event *linebot.Event) error {
 	switch message := event.Message.(type) {
 	case *linebot.TextMessage:
 		if _, err := h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
