@@ -3,45 +3,49 @@ package handler
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-var (
-	secret string
-	token  string
-)
-
-type HttpRequestHandler http.Handler
-
-type lineBotHandler struct {
-	bot *linebot.Client
+type LineHandler interface {
+	Handle(http.ResponseWriter, *http.Request)
 }
 
-func NewLineBotHandler() (HttpRequestHandler, error) {
-	bot, err := linebot.New(secret, token)
-	if err != nil {
-		return nil, err
-	}
-	return &lineBotHandler{bot}, nil
+type LineBotClient interface {
+	ParseRequest(*http.Request) ([]*linebot.Event, error)
+	ReplyMessage(string, ...linebot.SendingMessage) *linebot.ReplyMessageCall
 }
 
-func init() {
-	s, err := os.LookupEnv("LINE_CHANNEL_SECRET")
-	if !err {
-		log.Fatal("LINE_CHANNEL_SECRET is not set")
-	}
-	secret = s
-
-	t, err := os.LookupEnv("LINE_CHANNEL_ACCESS_TOKEN")
-	if !err {
-		log.Fatal("LINE_CHANNEL_ACCESS_TOKEN is not set")
-	}
-	token = t
+type EventHandler interface {
+	HandleEvent(*linebot.Event) error
 }
 
-func (h *lineBotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type lineHandler struct {
+	bot      LineBotClient
+	handlers *EventHandlerContainer
+}
+
+type MessageEventHandler struct {
+	bot LineBotClient
+}
+
+type EventHandlerContainer struct {
+	handlers map[linebot.EventType]EventHandler
+}
+
+func NewLineHandler(bot LineBotClient, handlers *EventHandlerContainer) LineHandler {
+	return &lineHandler{bot, handlers}
+}
+
+func NewEventHandlerContainer(bot LineBotClient) *EventHandlerContainer {
+	return &EventHandlerContainer{
+		handlers: map[linebot.EventType]EventHandler{
+			linebot.EventTypeMessage: &MessageEventHandler{bot},
+		},
+	}
+}
+
+func (h *lineHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	events, err := h.bot.ParseRequest(r)
 	if err != nil {
 		log.Print(err)
@@ -49,13 +53,23 @@ func (h *lineBotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, event := range events {
-		if event.Type == linebot.EventTypeMessage {
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				if _, err = h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
-					log.Print(err)
-				}
-			}
+		handler := h.handlers.GetHandler(event.Type)
+		if err := handler.HandleEvent(event); err != nil {
+			log.Printf("handleEvent failed: %v", err)
 		}
 	}
+}
+
+func (c *EventHandlerContainer) GetHandler(eventType linebot.EventType) EventHandler {
+	return c.handlers[eventType]
+}
+
+func (h *MessageEventHandler) HandleEvent(event *linebot.Event) error {
+	switch message := event.Message.(type) {
+	case *linebot.TextMessage:
+		if _, err := h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+			log.Printf("ReplyMessage failed: %v", err)
+		}
+	}
+	return nil
 }
