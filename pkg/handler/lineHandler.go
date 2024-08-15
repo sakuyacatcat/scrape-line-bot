@@ -2,7 +2,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -13,65 +12,32 @@ type LineHandler interface {
 	Handle(http.ResponseWriter, *http.Request)
 }
 
-type LineBotClient interface {
-	ParseRequest(*http.Request) ([]*linebot.Event, error)
-	ReplyMessage(string, ...linebot.SendingMessage) *linebot.ReplyMessageCall
-}
-
-type EventHandler interface {
-	handleEvent(*linebot.Event) error
-}
-
 type lineHandler struct {
-	bot      LineBotClient
-	handlers *eventHandlerContainer
+	client *linebot.Client
+	secret string
 }
 
-type messageEventHandler struct {
-	bot LineBotClient
-}
-
-type eventHandlerContainer struct {
-	handlers map[linebot.EventType]EventHandler
-}
-
-func NewLineHandler(bot LineBotClient, handlers *eventHandlerContainer) LineHandler {
-	return &lineHandler{bot, handlers}
-}
-
-func NewEventHandlerContainer(bot LineBotClient) *eventHandlerContainer {
-	return &eventHandlerContainer{
-		handlers: map[linebot.EventType]EventHandler{
-			linebot.EventTypeMessage: &messageEventHandler{bot},
-		},
+func NewLineHandler(c *linebot.Client, s string) *lineHandler {
+	return &lineHandler{
+		client: c,
+		secret: s,
 	}
 }
 
 func (h *lineHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	events, err := h.bot.ParseRequest(r)
+	events, err := h.client.ParseRequest(r)
+	log.Println(events)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 
 	for _, event := range events {
-		handler := h.handlers.getHandler(event.Type)
-		if err := handler.handleEvent(event); err != nil {
-			log.Printf("handleEvent failed: %v", err)
+		switch message := event.Message.(type) {
+		case *linebot.TextMessage:
+			if _, err := h.client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+				log.Printf("ReplyMessage failed: %v", err)
+			}
 		}
 	}
-}
-
-func (c *eventHandlerContainer) getHandler(eventType linebot.EventType) EventHandler {
-	return c.handlers[eventType]
-}
-
-func (h *messageEventHandler) handleEvent(event *linebot.Event) error {
-	switch message := event.Message.(type) {
-	case *linebot.TextMessage:
-		if _, err := h.bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
-			return fmt.Errorf("ReplyMessage failed: %v", err)
-		}
-	}
-	return nil
 }

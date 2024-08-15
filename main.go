@@ -40,13 +40,14 @@ func getEnv() error {
 }
 
 func main() {
+	log.Println("start server")
+
 	bot, err := linebot.New(secret, token)
 	if err != nil {
 		log.Printf("failed to get line bot client: %v", err)
 	}
-	handlers := handler.NewEventHandlerContainer(bot)
-	lineHandler := handler.NewLineHandler(bot, handlers)
 
+	lineHandler := handler.NewLineHandler(bot, secret)
 	http.HandleFunc("/", lineHandler.Handle)
 	http.ListenAndServe(":8080", nil)
 }
