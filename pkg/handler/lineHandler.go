@@ -14,13 +14,11 @@ type LineHandler interface {
 
 type lineHandler struct {
 	client *linebot.Client
-	secret string
 }
 
-func NewLineHandler(c *linebot.Client, s string) *lineHandler {
+func NewLineHandler(c *linebot.Client) *lineHandler {
 	return &lineHandler{
 		client: c,
-		secret: s,
 	}
 }
 

@@ -47,7 +47,7 @@ func main() {
 		log.Printf("failed to get line bot client: %v", err)
 	}
 
-	lineHandler := handler.NewLineHandler(bot, secret)
+	lineHandler := handler.NewLineHandler(bot)
 	http.HandleFunc("/", lineHandler.Handle)
 	http.ListenAndServe(":8080", nil)
 }
