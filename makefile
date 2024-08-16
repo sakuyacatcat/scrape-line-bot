@@ -12,6 +12,10 @@ run:
 	@echo "Running Docker image..."
 	docker compose up --build
 
+format:
+	@echo "Formatting code..."
+	go fmt ./...
+
 test:
 	@echo "Testing Docker image..."
 	docker compose up --build -d
