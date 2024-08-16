@@ -7,7 +7,11 @@ import (
 
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/pkg/errors"
+	"github.com/sakuyacatcat/scrape-line-bot/pkg/controller"
+	"github.com/sakuyacatcat/scrape-line-bot/pkg/domain/repository"
+	"github.com/sakuyacatcat/scrape-line-bot/pkg/domain/service"
 	"github.com/sakuyacatcat/scrape-line-bot/pkg/handler"
+	"github.com/sakuyacatcat/scrape-line-bot/pkg/view"
 )
 
 var (
@@ -40,14 +44,19 @@ func getEnv() error {
 }
 
 func main() {
-	log.Println("start server")
+	log.Println("server start")
 
 	bot, err := linebot.New(secret, token)
 	if err != nil {
 		log.Printf("failed to get line bot client: %v", err)
 	}
 
-	lineHandler := handler.NewLineHandler(bot)
+	repository := repository.NewScrapeRepository()
+	service := service.NewCoatService(repository)
+	view := view.NewCoatView()
+	controller := controller.NewCoatController(service, view)
+	lineHandler := handler.NewLineHandler(bot, controller)
+
 	http.HandleFunc("/", lineHandler.Handle)
 	http.ListenAndServe(":8080", nil)
 }
