@@ -1,0 +1,7 @@
+steps:
+  - action: fetch
+    url: "https://example.com"
+  - action: extract
+    selector: "title"
+  - action: extract
+    selector: "h1"

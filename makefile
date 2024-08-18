@@ -12,6 +12,10 @@ run:
 	@echo "Running Docker image..."
 	docker compose up --build
 
+local:
+	@echo "Running Docker image locally..."
+	go run scripts/localExec.go
+
 format:
 	@echo "Formatting code..."
 	go fmt ./...
